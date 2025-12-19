@@ -1,0 +1,13 @@
+# outputs / caches
+.outputs/
+__pycache__/
+.mypy_cache/
+.ruff_cache/
+
+# python
+*.pyc
+*.pyo
+*.pyd
+
+# mac
+.DS_Store
