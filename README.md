@@ -28,7 +28,7 @@ python3 -m bandit_ranker_m1.cli \
   --user-profile True \
 ```
 
-![readme의 설정대로 실행할 경우의 reward / regret 그림](assets/image.png)
+![readme의 설정대로 실행할 경우의 reward / regret plot](assets/cumulative_alpha_comparison.png)
 
 
 ## 세부 데이터 집계
