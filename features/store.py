@@ -9,18 +9,17 @@ import numpy as np
 @dataclass
 class FeatureStore:
     """
-    user-profile:과거 상호작용(<=t-1)까지 누적해 갱신함
+    user-profile:과거 상호작용(<=t-1)까지 누적해 갱신
     item-trend: 최근 W-step 윈도우 기준으로 'recent'를 계산
     아이템 장르, 유저수, 아이템수, 윈도우사이즈, 페르소나여부, 유저별 장르 카운팅,
     유저별 프로필, 아이템 전체 클릭횟수, 최근 클릭 횟수
     """
 
-    # user_profile: np.ndarray        # (U, G)
     item_genre: np.ndarray  # (I, G)
     num_users: int
     num_items: int
     trend_window_steps: int = 20_000
-    persona: Optional[np.ndarray] = None  # (U, P) optional
+    persona: Optional[np.ndarray] = None
 
     def __post_init__(self):
         U, I = int(self.num_users), int(self.num_items)
@@ -51,25 +50,24 @@ class FeatureStore:
 
     def update_from_event(self, user_idx: int, pos_item: int) -> None:
         """
-        step t가 끝난 뒤 호출.
-        이 이벤트는 "로그에 실제로 있었던 positive" 이므로
-        미래 누수 없이 t+1 이후 컨텍스트에 반영된다.
+        step t가 끝난 뒤 호출
+        로그에 실제로 있었던 positive 아이템이므로 이후 컨텍스 반영
         """
         u = user_idx
         it = pos_item
         t = self.current_step
         W = self.trend_window_steps
 
-        # 1) 유저 프로필 갱신 (누적)
+        # 유저 프로필 누적갱신
         self._user_genre_cnt[u] += self.item_genre[it]
         self._update_user_profile(u)
 
-        # 2) 아이템 트렌드 갱신
+        # 아이템 트렌드 갱신
         self._item_total[it] += 1.0
         dq = self._item_recent_steps[it]
         dq.append(t)
 
-        # recent window 밖 제거 (해당 아이템 dq만 정리하면 충분)
+        # recent window 밖 제거
         cutoff = t - W
         while dq and dq[0] <= cutoff:
             dq.popleft()
@@ -99,12 +97,11 @@ class FeatureStore:
         recent = np.zeros_like(total, dtype="float32")
         cutoff = t - W
 
-        # 후보가 50개라 여기 loop는 매우 싸다
         for j, it in enumerate(items):
             dq = self._item_recent_steps[int(it)]
             while dq and dq[0] <= cutoff:
                 dq.popleft()
-            recent[j] = float(len(dq))  # 최근 W동안 it 아이템이 클릭된 횟수
+            recent[j] = float(len(dq))
 
         past = np.clip(total - recent, 0.0, None)
         recent_ratio = recent / (total + eps)
