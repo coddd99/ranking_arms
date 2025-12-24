@@ -9,4 +9,4 @@ if __name__ == "__main__":
     parent = here.parent                   
     sys.path.insert(0, str(parent))
 
-    runpy.run_module("bandit_ranker_m1.cli", run_name="__main__")
+    runpy.run_module("ranking_arms.cli", run_name="__main__")
